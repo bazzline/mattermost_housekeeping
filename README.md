@@ -19,4 +19,4 @@ Right now, you have to duplicate the configuration values from your `/usr/share/
 The script comes with an [install](bin/install.sh)- and an [uninstall](bin/uninstall.sh) routine.
 All configurable values are configured in `project_path/data/local_configuration.sh`.
 
-Thanks to [matterclean](https://github.com/sinfallas/matterclean/blob/master/matterclean).
+Thanks to [matterclean](https://github.com/sinfallas/matterclean/blob/master/matterclean) and [rsyslog_mysql_housekeeping](https://github.com/bazzline/rsyslog_mysql_housekeeping).
