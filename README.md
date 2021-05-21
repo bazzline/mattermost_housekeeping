@@ -10,11 +10,11 @@ The current documentation can be found [here](documentation).
 
 ## Setup
 
+Please read the [installation](documentation/setup/install.md) docmentation.
+
 The script comes with an [install](bin/install.sh)- and an [uninstall](bin/uninstall.sh) routine.
 
 All configurable values are configured in `<project_path>/data/local_configuration.sh`.
-
-Please read the [installation](documentation/setup/install.md) docmentation.
 
 ## Why
 
