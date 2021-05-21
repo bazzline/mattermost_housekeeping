@@ -1,5 +1,7 @@
 # Mattermost housekeeping script
 
+Deletes old entries in Post and FileInfo on MatterMost GPLv2.
+
 ## General
 
 Free as in freedom mattermost housekeeping script.
@@ -15,6 +17,12 @@ Please read the [installation](documentation/setup/install.md) docmentation.
 The script comes with an [install](bin/install.sh)- and an [uninstall](bin/uninstall.sh) routine.
 
 All configurable values are configured in `<project_path>/data/local_configuration.sh`.
+
+## What
+
+This is a full blown cronjob/systemd.service to cleanup the mattermost database tables `Posts` and `FileInfo`.
+
+Entries older than x days where removed. This includes the attachments on the disk.
 
 ## Why
 
