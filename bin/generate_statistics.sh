@@ -33,7 +33,7 @@ function generate_statistics ()
 
     local DATETIME_LIMIT_AS_VALUE=$(( ${DATETIME_LIMIT_AS_TIMESTAMP} * 1000 ))
 
-    echo ":: Limitation datetime is >>${DATETIME_LIMIT_AS_STRING}<< which is >>${DATETIME_LIMIT_AS_TIMESTAMP}<< as timestamp."
+    echo ":: Limitation datetime is >>${DATETIME_LIMIT_AS_STRING}<< which is >>${DATETIME_LIMIT_AS_VALUE}<< as value."
 
     _generate_statistic_per_table "Posts" ${DATETIME_LIMIT_AS_VALUE}
     _generate_statistic_per_table "FileInfo" ${DATETIME_LIMIT_AS_VALUE}
