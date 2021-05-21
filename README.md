@@ -1,4 +1,4 @@
-# Rsyslog mysql housekeeping script
+# Mattermost housekeeping script
 
 Free as in freedom mattermost housekeeping script.
 

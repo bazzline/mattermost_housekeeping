@@ -2,11 +2,11 @@
 ####
 # Installs housekeeping scripts
 ####
-# @since 2021-04-21
+# @since 2021-05-21
 # @author stev leibelt <artodeto@bazzline.net>
 ####
 
-function _install_rsyslog_housekeeping ()
+function _install_mattermost_housekeeping ()
 {
     local PATH_OF_THE_CURRENT_SCRIPT_BASH=$(cd $(dirname "${BASH_SOURCE[0]}"); pwd)
 
@@ -31,13 +31,13 @@ function _install_rsyslog_housekeeping ()
 
     if [[ -f /usr/bin/systemd ]];
     then
-        local TEMPLATE_PATH_TO_THE_SCRIPT="${PATH_TO_BIN}/cleanup_and_maintain_syslog_systemevent.sh"
+        local TEMPLATE_PATH_TO_THE_SCRIPT="${PATH_TO_BIN}/do_the_housekeeping.sh"
 
-        cat > ${PATH_TO_DATA}/rsyslog-housekeeping.service <<DELIM
+        cat > ${PATH_TO_DATA}/mattermost-housekeeping.service <<DELIM
 [Unit]
-Description=rsyslog mysql housekeeping
+Description=mattermost mysql housekeeping
 ConditionACPower=true
-After=rsyslog.service
+After=mattermost.service
 
 [Service]
 Type=oneshot
@@ -46,11 +46,11 @@ KillMode=process
 TimeoutStopSec=21600
 DELIM
 
-        sudo cp ${PATH_TO_DATA}/weekly-rsyslog-housekeeping.service /etc/systemd/system/weekly-rsyslog-housekeeping.service
+        sudo cp ${PATH_TO_DATA}/weekly-mattermost-housekeeping.service /etc/systemd/system/weekly-mattermost-housekeeping.service
 
-        sudo cp ${PATH_TO_SOURCE}/weekly-rsyslog-housekeeping.timer /etc/systemd/system/weekly-rsyslog-housekeeping.timer
-        sudo cp ${PATH_TO_SOURCE}/daily-rsyslog-housekeeping.timer /etc/systemd/system/daily-rsyslog-housekeeping.timer
-        sudo cp ${PATH_TO_SOURCE}/hourly-rsyslog-housekeeping.timer /etc/systemd/system/hourly-rsyslog-housekeeping.timer
+        sudo cp ${PATH_TO_SOURCE}/weekly-mattermost-housekeeping.timer /etc/systemd/system/weekly-mattermost-housekeeping.timer
+        sudo cp ${PATH_TO_SOURCE}/daily-mattermost-housekeeping.timer /etc/systemd/system/daily-mattermost-housekeeping.timer
+        sudo cp ${PATH_TO_SOURCE}/hourly-mattermost-housekeeping.timer /etc/systemd/system/hourly-mattermost-housekeeping.timer
         sudo systemctl daemon-reload
     fi
 
@@ -60,4 +60,4 @@ DELIM
     echo "Installed at: $(date)" > ${PATH_TO_DATA}/.is_installed
 }
 
-_install_rsyslog_housekeeping
+_install_mattermost_housekeeping

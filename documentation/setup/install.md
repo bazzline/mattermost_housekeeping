@@ -51,11 +51,11 @@ If you want to create your own timer, please read [this](../knowledge_base/creat
 
 ```
 #enable the fitting timer on your own.
-systemctl enable weekly-rsyslog-housekeeping.timer
+systemctl enable weekly-mattermost-housekeeping.timer
 #_or
-systemctl enable daily-rsyslog-housekeeping.timer
+systemctl enable daily-mattermost-housekeeping.timer
 #_or
-systemctl enable hourly-rsyslog-housekeeping.timer
+systemctl enable hourly-mattermost-housekeeping.timer
 ```
 
 ## If you want to do the housekeeping right away

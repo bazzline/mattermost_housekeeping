@@ -2,11 +2,11 @@
 ####
 # Uninstalls housekeeping scripts
 ####
-# @since 2021-04-21
+# @since 2021-05-21
 # @author stev leibelt <artodeto@bazzline.net>
 ####
 
-function _uninstall_rsyslog_housekeeping ()
+function _uninstall_mattermost_housekeeping ()
 {
     local PATH_OF_THE_CURRENT_SCRIPT_BASH=$(cd $(dirname "${BASH_SOURCE[0]}"); pwd)
 
@@ -24,17 +24,47 @@ function _uninstall_rsyslog_housekeeping ()
 
     if [[ -f /usr/bin/systemd ]];
     then
-        systemctl -q is-active weekly-rsyslog-housekeeping.timer
+        systemctl -q is-active daily-mattermost-housekeeping.timer
 
         if [[ $? -eq 0 ]];
         then
-            sudo systemctl disable weekly-rsyslog-housekeeping.timer
+            sudo systemctl disable daily-mattermost-housekeeping.timer
         fi
 
-        sudo rm /etc/systemd/system/weekly-rsyslog-housekeeping.timer
-        sudo rm /etc/systemd/system/weekly-rsyslog-housekeeping.service
+        systemctl -q is-active hourly-mattermost-housekeeping.timer
 
-        rm ${PATH_TO_DATA}/weekly-rsyslog-housekeeping.service
+        if [[ $? -eq 0 ]];
+        then
+            sudo systemctl disable hourly-mattermost-housekeeping.timer
+        fi
+
+        systemctl -q is-active weekly-mattermost-housekeeping.timer
+
+        if [[ $? -eq 0 ]];
+        then
+            sudo systemctl disable weekly-mattermost-housekeeping.timer
+        fi
+
+        if [[ -f /etc/systemd/system/daily-mattermost-housekeeping.timer ]];
+        then
+            sudo rm /etc/systemd/system/daily-mattermost-housekeeping.timer
+        fi
+
+
+        if [[ -f /etc/systemd/system/hourly-mattermost-housekeeping.timer ]];
+        then
+            sudo rm /etc/systemd/system/hourly-mattermost-housekeeping.timer
+        fi
+
+
+        if [[ -f /etc/systemd/system/weekly-mattermost-housekeeping.timer ]];
+        then
+            sudo rm /etc/systemd/system/weekly-mattermost-housekeeping.timer
+        fi
+
+        sudo rm /etc/systemd/system/mattermost-housekeeping.service
+
+        rm ${PATH_TO_DATA}/mattermost-housekeeping.service
 
         sudo systemctl daemon-reload
     fi
@@ -44,4 +74,4 @@ function _uninstall_rsyslog_housekeeping ()
     rm ${PATH_TO_DATA}/.is_installed
 }
 
-_uninstall_rsyslog_housekeeping
+_uninstall_mattermost_housekeeping
