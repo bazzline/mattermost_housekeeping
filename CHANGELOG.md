@@ -20,6 +20,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+* fixed systemd detection issue in uninstall script
+
 ## [1.0.0](https://github.com/bazzline/mattermost_housekeeping/tree/1.0.0) - released at 20210521
 
 ### Added

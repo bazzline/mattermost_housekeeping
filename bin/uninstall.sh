@@ -22,7 +22,7 @@ function _uninstall_mattermost_housekeeping ()
         return 1
     fi
 
-    if [[ -f /usr/bin/systemd ]];
+    if [[ -f /usr/bin/systemctl ]];
     then
         systemctl -q is-active daily-mattermost-housekeeping.timer
 
