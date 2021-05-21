@@ -28,13 +28,14 @@ function generate_statistics ()
     #eo: variable declaration
 
     #bo: generate_statistic
-    local DATETIME_LIMIT_AS_TIMESTAMP=$(date -d "now - ${DAYS_TO_KEEP_IN_THE_PAST} days" +%Y%m%d-%H%M%S)
-    local DATETIME_LIMIT_AS_STRING=$(date -d "now - ${DAYS_TO_KEEP_IN_THE_PAST} days" +%s)
+    local DATETIME_LIMIT_AS_STRING=$(date -d "now - ${DAYS_TO_KEEP_IN_THE_PAST} days" +%Y-%m-%d-%H:%M:%S)
+    local DATETIME_LIMIT_AS_TIMESTAMP=$(date -d "now - ${DAYS_TO_KEEP_IN_THE_PAST} days" +"%s")
+    local DATETIME_LIMIT_AS_VALUE=$(( ${DATETIME_LIMIT_AS_TIMESTAMP} * 1000 ))
 
-    echo ":: Limitation datetime is >>${DATETIME_LIMIT_AS_STRING}<< which is >>${DATETIME_LIMIT_AS_TIMESTAMP}<< as timestamp."
+    echo ":: Limitation datetime is >>${DATETIME_LIMIT_AS_STRING}<< which is >>${DATETIME_LIMIT_AS_VALUE}<< as value."
 
-    _generate_statistic_per_table "Posts" ${DATETIME_LIMIT_AS_TIMESTAMP}
-    _generate_statistic_per_table "FileInfo" ${DATETIME_LIMIT_AS_TIMESTAMP}
+    _generate_statistic_per_table "Posts" ${DATETIME_LIMIT_AS_VALUE}
+    _generate_statistic_per_table "FileInfo" ${DATETIME_LIMIT_AS_VALUE}
 }
 
 ####
@@ -42,13 +43,13 @@ function generate_statistics ()
 # @param: <int: datetime limit as timestamp>
 function _generate_statistic_per_table ()
 {
-    local DATABASE_TABLE_NAME="${0}"
-    local DATETIME_LIMIT_AS_TIMESTAMP="${1}"
+    local DATABASE_TABLE_NAME="${1}"
+    local DATETIME_LIMIT_AS_TIMESTAMP="${2}"
 
     echo ":: Number of entries in total for table >>${DATABASE_TABLE_NAME}<<."
-    mysql -u ${DATABASE_USER_NAME} -p${DATABASE_USER_PASSWORD} -e "SELECT COUNT(Id) FROM ${DATABASE_TABLE}" ${DATABASE_NAME}
+    mysql -u ${DATABASE_USER_NAME} -p${DATABASE_USER_PASSWORD} -e "SELECT COUNT(Id) FROM ${DATABASE_TABLE_NAME}" ${DATABASE_NAME}
     echo ":: Number of posible deleted entries for table >>${DATABASE_TABLE_NAME}<<."
-    mysql -u ${DATABASE_USER_NAME} -p${DATABASE_USER_PASSWORD} -e "SELECT COUNT(Id) FROM ${DATABASE_TABLE} WHERE ${DATABASE_TABLE}.CreateAt < ${DATETIME_LIMIT_AS_TIMESTAMP})" ${DATABASE_NAME}
+    mysql -u ${DATABASE_USER_NAME} -p${DATABASE_USER_PASSWORD} -e "SELECT COUNT(Id) FROM ${DATABASE_TABLE_NAME} WHERE ${DATABASE_TABLE_NAME}.CreateAt < ${DATETIME_LIMIT_AS_TIMESTAMP}" ${DATABASE_NAME}
     #eo: generate_statistic
 }
 

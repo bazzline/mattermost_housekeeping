@@ -47,13 +47,15 @@ function do_the_housekeeping ()
     #eo: variable declaration
 
     #bo: housekeeping
-    local DATETIME_LIMIT_AS_TIMESTAMP=$(date -d "now - ${DAYS_TO_KEEP_IN_THE_PAST} days" +%Y%m%d-%H%M%S)
-    local DATETIME_LIMIT_AS_STRING=$(date -d "now - ${DAYS_TO_KEEP_IN_THE_PAST} days" +%s)
+    local DATETIME_LIMIT_AS_STRING=$(date -d "now - ${DAYS_TO_KEEP_IN_THE_PAST} days" +%Y-%m-%d_%H:%M:%S)
+    local DATETIME_LIMIT_AS_TIMESTAMP=$(date -d "now - ${DAYS_TO_KEEP_IN_THE_PAST} days" +%s)
 
-    logger -i -p cron.info ":: Removing entries older than >>${DATETIME_LIMIT_AS_STRING}<< which is >>${DATETIME_LIMIT_AS_TIMESTAMP}<< as timestamp."
+    local DATETIME_LIMIT_AS_VALUE=$(( ${DATETIME_LIMIT_AS_TIMESTAMP} * 1000 ))
 
-    _process_table_posts ${DATETIME_LIMIT_AS_TIMESTAMP}
-    _process_table_fileInfo ${DATETIME_LIMIT_AS_TIMESTAMP}
+    logger -i -p cron.info ":: Removing entries older than >>${DATETIME_LIMIT_AS_STRING}<< which is >>${DATETIME_LIMIT_AS_VALUE}<< as value."
+
+    _process_table_posts ${DATETIME_LIMIT_AS_VALUE}
+    _process_table_fileInfo ${DATETIME_LIMIT_AS_VALUE}
     #eo: housekeeping
 }
 
@@ -63,8 +65,8 @@ function do_the_housekeeping ()
 ####
 function _cleanup_database_table ()
 {
-    local DATABASE_TABLE_NAME="${0}"
-    local DATETIME_LIMIT_AS_TIMESTAMP="${1}"
+    local DATABASE_TABLE_NAME="${1}"
+    local DATETIME_LIMIT_AS_TIMESTAMP="${2}"
 
     #bo: cleanup
     logger -i -p cron.debug "bo: cleanup, table >>${DATABASE_TABLE_NAME}<<."
@@ -73,11 +75,9 @@ function _cleanup_database_table ()
     local CURRENT_RUN_ITERATOR=1
     while [[ ${CURRENT_RUN_ITERATOR} -le ${NUMBER_OF_RUNS} ]];
     do
-        echo "DATABASE_NAME: ${DATABASE_NAME}"
-        echo "DATABASE_TABLE_NAME: ${DATABASE_TABLE_NAME}"
         logger -i -p cron.info "   Run ${CURRENT_RUN_ITERATOR} / ${NUMBER_OF_RUNS} started."
         logger -i -p cron.info "      Executing sql statement >>DELETE FROM ${DATABASE_TABLE_NAME} WHERE ${DATABASE_TABLE_NAME}.CreateAt < ${DATETIME_LIMIT_AS_TIMESTAMP} LIMIT ${NUMBER_OF_ENTRIES_TO_DELETE_PER_RUN};<<."
-        #mysql -u ${DATABASE_USER_NAME} -p${DATABASE_USER_PASSWORD} -e "DELETE FROM ${DATABASE_TABLE_NAME} WHERE ${DATABASE_TABLE_NAME}.CreateAt < ${DATETIME_LIMIT_AS_TIMESTAMP} LIMIT ${NUMBER_OF_ENTRIES_TO_DELETE_PER_RUN};" ${DATABASE_NAME}
+        mysql -u ${DATABASE_USER_NAME} -p${DATABASE_USER_PASSWORD} -e "DELETE FROM ${DATABASE_TABLE_NAME} WHERE ${DATABASE_TABLE_NAME}.CreateAt < ${DATETIME_LIMIT_AS_TIMESTAMP} LIMIT ${NUMBER_OF_ENTRIES_TO_DELETE_PER_RUN};" ${DATABASE_NAME}
         logger -i -p cron.info "   Run ${CURRENT_RUN_ITERATOR} / ${NUMBER_OF_RUNS} finished."
         ((++CURRENT_RUN_ITERATOR))
         sleep 10 #a few seconds does not harm us but helps the dbms to fetch some fresh air
@@ -121,6 +121,8 @@ function _process_table_fileInfo ()
         return 3
     fi
 
+    logger -i -p cron.debug "   Created directory >>${TEMPORARY_DIRECTORY_PATH}<<."
+
     chown -R mysql:mysql "${TEMPORARY_DIRECTORY_PATH}"
 
     local LIST_OF_FILE_INFO_PATH="${TEMPORARY_DIRECTORY_PATH}/file_info_-_path"
@@ -131,9 +133,14 @@ function _process_table_fileInfo ()
     ##eo: setup
 
     ##bo: list creation
-    mysql -u ${DATABASE_USER_NAME} -p${DATABASE_USER_PASSWORD} -e "SELECT Path FROM ${DATABASE_TABLE_NAME} WHERE CreateAt < ${DATETIME_LIMIT_AS_TIMESTAMP} IN OUTFILE '${LIST_OF_FILE_INFO_PATH}' FIELD TERMINATED BY ',' ENCLOSED BY '' LINES TERMINATED BY '\n';"
-    mysql -u ${DATABASE_USER_NAME} -p${DATABASE_USER_PASSWORD} -e "SELECT PreviewPath FROM ${DATABASE_TABLE_NAME} WHERE CreateAt < ${DATETIME_LIMIT_AS_TIMESTAMP} IN OUTFILE '${LIST_OF_FILE_INFO_PREVIEWPATH}' FIELD TERMINATED BY ',' ENCLOSED BY '' LINES TERMINATED BY '\n';"
-    mysql -u ${DATABASE_USER_NAME} -p${DATABASE_USER_PASSWORD} -e "SELECT ThumbnailPath FROM ${DATABASE_TABLE_NAME} WHERE CreateAt < ${DATETIME_LIMIT_AS_TIMESTAMP} IN OUTFILE '${LIST_OF_FILE_INFO_THUMBNAILPATH}' FIELD TERMINATED BY ',' ENCLOSED BY '' LINES TERMINATED BY '\n';"
+    logger -i -p cron.debug "   Executing sql statenemt >>SELECT Path FROM ${DATABASE_TABLE_NAME} WHERE CreateAt < ${DATETIME_LIMIT_AS_TIMESTAMP} INTO OUTFILE '${LIST_OF_FILE_INFO_PATH}' FIELDS TERMINATED BY ',' ENCLOSED BY '' LINES TERMINATED BY '\n';<<"
+    mysql -u ${DATABASE_USER_NAME} -p${DATABASE_USER_PASSWORD} -e "SELECT Path FROM ${DATABASE_TABLE_NAME} WHERE CreateAt < ${DATETIME_LIMIT_AS_TIMESTAMP} INTO OUTFILE '${LIST_OF_FILE_INFO_PATH}' FIELDS TERMINATED BY ',' ENCLOSED BY '' LINES TERMINATED BY '\n';" ${DATABASE_NAME}
+
+    logger -i -p cron.debug "   Executing sql statement >>SELECT PreviewPath FROM ${DATABASE_TABLE_NAME} WHERE CreateAt < ${DATETIME_LIMIT_AS_TIMESTAMP} AND length(PreviewPath) > 0 INTO OUTFILE '${LIST_OF_FILE_INFO_PREVIEWPATH}' FIELDS TERMINATED BY ',' ENCLOSED BY '' LINES TERMINATED BY '\n';<<"
+    mysql -u ${DATABASE_USER_NAME} -p${DATABASE_USER_PASSWORD} -e "SELECT PreviewPath FROM ${DATABASE_TABLE_NAME} WHERE CreateAt < ${DATETIME_LIMIT_AS_TIMESTAMP} AND length(PreviewPath) > 0 INTO OUTFILE '${LIST_OF_FILE_INFO_PREVIEWPATH}' FIELDS TERMINATED BY ',' ENCLOSED BY '' LINES TERMINATED BY '\n';" ${DATABASE_NAME}
+
+    logger -i -p cron.debug "   Executing sql statement >>SELECT ThumbnailPath FROM ${DATABASE_TABLE_NAME} WHERE CreateAt < ${DATETIME_LIMIT_AS_TIMESTAMP} AND length(ThumbnailPath) > 0 INTO OUTFILE '${LIST_OF_FILE_INFO_THUMBNAILPATH}' FIELDS TERMINATED BY ',' ENCLOSED BY '' LINES TERMINATED BY '\n'<<;"
+    mysql -u ${DATABASE_USER_NAME} -p${DATABASE_USER_PASSWORD} -e "SELECT ThumbnailPath FROM ${DATABASE_TABLE_NAME} WHERE CreateAt < ${DATETIME_LIMIT_AS_TIMESTAMP} AND length(ThumbnailPath) > 0 INTO OUTFILE '${LIST_OF_FILE_INFO_THUMBNAILPATH}' FIELDS TERMINATED BY ',' ENCLOSED BY '' LINES TERMINATED BY '\n';" ${DATABASE_NAME}
 
     cat "${LIST_OF_FILE_INFO_PATH}" > "${LIST_OF_FILE_PATH_TO_DELETE}"
     cat "${LIST_OF_FILE_INFO_PREVIEWPATH}" >> "${LIST_OF_FILE_PATH_TO_DELETE}"
@@ -147,15 +154,16 @@ function _process_table_fileInfo ()
 
         if [[ -f "${ABSOLUTE_FILE_PATH}" ]];
         then
-            logger -i -p cron.debug "   Removing filepath >>${FILE_PATH}<<."
-            #rm "${ABSOLUTE_FILE_PATH}"
+            logger -i -p cron.debug "   Removing filepath >>${ABSOLUTE_FILE_PATH}<<."
+            rm "${ABSOLUTE_FILE_PATH}"
         else
-            logger -i -p cron.info "   Filepath is invalid >>${FILE_PATH}<<."
+            logger -i -p cron.info "   Filepath is invalid >>${ABSOLUTE_FILE_PATH}<<."
         fi
     done < "${LIST_OF_FILE_PATH_TO_DELETE}"
     ##eo: file removing
 
     ##bo: teardown
+    logger -i -p cron.debug "   Removing directory >>${TEMPORARY_DIRECTORY_PATH}<<."
     rm -fr "${TEMPORARY_DIRECTORY_PATH}"
     ##eo: teardown
     logger -i -p cron.debug ":: Finished cleanup of path >>${FILE_SETTINGS_DIRECTORY}<<."
