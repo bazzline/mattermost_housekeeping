@@ -17,6 +17,7 @@ Right now, only mysql is supported.
 Right now, you have to duplicate the configuration values from your `/usr/share/webapps/mattermost/config/config.json`. Since the configuration is written in json and json is !fun in bash, we have to keep it that way.
 
 The script comes with an [install](bin/install.sh)- and an [uninstall](bin/uninstall.sh) routine.
+
 All configurable values are configured in `project_path/data/local_configuration.sh`.
 
 Thanks to [matterclean](https://github.com/sinfallas/matterclean/blob/master/matterclean) and [rsyslog_mysql_housekeeping](https://github.com/bazzline/rsyslog_mysql_housekeeping).

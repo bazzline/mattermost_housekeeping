@@ -52,12 +52,10 @@ DELIM
         sudo cp ${PATH_TO_SOURCE}/daily-rsyslog-housekeeping.timer /etc/systemd/system/daily-rsyslog-housekeeping.timer
         sudo cp ${PATH_TO_SOURCE}/hourly-rsyslog-housekeeping.timer /etc/systemd/system/hourly-rsyslog-housekeeping.timer
         sudo systemctl daemon-reload
-
-        echo ":: Please enable the fitting timer on your own."
-        echo "   systemctl enable weekly-rsyslog-housekeeping.timer"
-        echo "   systemctl enable daily-rsyslog-housekeeping.timer"
-        echo "   systemctl enable hourly-rsyslog-housekeeping.timer"
     fi
+
+    echo ":: You have to do some manual work before using it!"
+    echo "   Please read >>documentation/setup/install.md<<"
 
     echo "Installed at: $(date)" > ${PATH_TO_DATA}/.is_installed
 }
