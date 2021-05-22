@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### To Add
 
-* Add support for postgresql
+* Add support for [postgresql](https://github.com/aljazceru/mattermost-retention)
 * Add support for using exising `config.json`
 * Try to add a arch linux aur package
 

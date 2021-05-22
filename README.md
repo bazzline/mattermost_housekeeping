@@ -10,6 +10,8 @@ The current change log can be found [here](CHANGELOG.md).
 
 The current documentation can be found [here](documentation).
 
+This script supports MySQL/MariaDB only right now. If you need something for postgresql, take a look to [mattermost-retention](https://github.com/aljazceru/mattermost-retention).
+
 ## Setup
 
 Please read the [installation](documentation/setup/install.md) docmentation.
