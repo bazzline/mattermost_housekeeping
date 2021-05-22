@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 * Add support for postgresql
 * Add support for using exising `config.json`
+* Try to add a arch linux aur package
 
 ### To Change
 
