@@ -46,7 +46,7 @@ KillMode=process
 TimeoutStopSec=21600
 DELIM
 
-        sudo cp ${PATH_TO_DATA}/weekly-mattermost-housekeeping.service /etc/systemd/system/weekly-mattermost-housekeeping.service
+        sudo cp ${PATH_TO_DATA}/mattermost-housekeeping.service /etc/systemd/system/mattermost-housekeeping.service
 
         sudo cp ${PATH_TO_SOURCE}/weekly-mattermost-housekeeping.timer /etc/systemd/system/weekly-mattermost-housekeeping.timer
         sudo cp ${PATH_TO_SOURCE}/daily-mattermost-housekeeping.timer /etc/systemd/system/daily-mattermost-housekeeping.timer
