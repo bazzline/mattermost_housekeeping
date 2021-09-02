@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### To Change
 
+* Check, for each run, if a next run is still needed (abort if there is no more message available for deletion)
+
 ## [Unreleased]
 
 ### Added
