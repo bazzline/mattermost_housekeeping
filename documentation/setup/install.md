@@ -4,8 +4,10 @@
 
 ```
 #allow mattermost user to write to the filesystem
+#grant file is a global privilege, that's why you have
+#   to grant it for all databases
 mysql -u root
-GRANT FILE ON *.* TO 'mmuser'@'localhost';
+GRANT FILE ON *.* TO '<mattermost database user name>'@'localhost';
 FLUSH PRIVILEGES;
 ```
 
