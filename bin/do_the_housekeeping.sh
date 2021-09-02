@@ -307,7 +307,7 @@ function _execute_maintenance ()
     #   check table health
     if [[ ${EXECUTE_DATABASE_CHECK} -eq 1 ]];
     then
-        _log_message notice "   Starting >>check<< for database >>${DATABASE_NAME} ${DATABASE_TABLE_NAME}<<"
+        _log_message notice "   Starting >>check<< for database >>${DATABASE_NAME}.${DATABASE_TABLE_NAME}<<"
         mysqlcheck -u"${DATABASE_USER_NAME}" -p"${DATABASE_USER_PASSWORD}" --silent --check --auto-repair "${DATABASE_NAME}" "${DATABASE_TABLE_NAME}"
     else
         _log_message debug "   Skipping >>check<< for database."
@@ -316,7 +316,7 @@ function _execute_maintenance ()
     if [[ ${EXECUTE_DATABASE_OPTIMIZE} -eq 1 ]];
     then
         #   reclaim unused disk space
-        _log_message notice "   Starting >>optimize<< for database >>${DATABASE_NAME} ${DATABASE_TABLE_NAME}<<"
+        _log_message notice "   Starting >>optimize<< for database >>${DATABASE_NAME}.${DATABASE_TABLE_NAME}<<"
         mysqlcheck -u"${DATABASE_USER_NAME}" -p"${DATABASE_USER_PASSWORD}" --silent --optimize "${DATABASE_NAME}" "${DATABASE_TABLE_NAME}"
     else
         _log_message debug "   Skipping >>optimize<< for database."
@@ -325,7 +325,7 @@ function _execute_maintenance ()
     if [[ ${EXECUTE_DATABASE_ANALYZE} -eq 1 ]];
     then
         #   rebuild and optimize indexes
-        _log_message notice "   Starting >>analyze<< for database >>${DATABASE_NAME} ${DATABASE_TABLE_NAME}<<"
+        _log_message notice "   Starting >>analyze<< for database >>${DATABASE_NAME}.${DATABASE_TABLE_NAME}<<"
         mysqlcheck -u"${DATABASE_USER_NAME}" -p"${DATABASE_USER_PASSWORD}" --silent --analyze "${DATABASE_NAME}" "${DATABASE_TABLE_NAME}"
     else
         _log_message debug "   Skipping >>analyze<< for database."
