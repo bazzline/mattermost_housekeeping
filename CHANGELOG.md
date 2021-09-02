@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 
 * Added documentation
+* Encapsulated username, password and databasename in the mysql cli calls with >>"<< in the statistics generation script
 
 ### Changed
 

@@ -48,9 +48,9 @@ function _generate_statistic_per_table ()
     local DATETIME_LIMIT_AS_TIMESTAMP="${2}"
 
     echo ":: Number of entries in total for table >>${DATABASE_TABLE_NAME}<<."
-    mysql -u ${DATABASE_USER_NAME} -p${DATABASE_USER_PASSWORD} -e "SELECT COUNT(Id) FROM ${DATABASE_TABLE_NAME}" ${DATABASE_NAME}
+    mysql -u"${DATABASE_USER_NAME}" -p"${DATABASE_USER_PASSWORD}" "${DATABASE_NAME}" -e "SELECT COUNT(Id) FROM ${DATABASE_TABLE_NAME}"
     echo ":: Number of posible deleted entries for table >>${DATABASE_TABLE_NAME}<<."
-    mysql -u ${DATABASE_USER_NAME} -p${DATABASE_USER_PASSWORD} -e "SELECT COUNT(Id) FROM ${DATABASE_TABLE_NAME} WHERE ${DATABASE_TABLE_NAME}.CreateAt < ${DATETIME_LIMIT_AS_TIMESTAMP}" ${DATABASE_NAME}
+    mysql -u"${DATABASE_USER_NAME}" -p"${DATABASE_USER_PASSWORD}" "${DATABASE_NAME}" -e "SELECT COUNT(Id) FROM ${DATABASE_TABLE_NAME} WHERE ${DATABASE_TABLE_NAME}.CreateAt < ${DATETIME_LIMIT_AS_TIMESTAMP}"
     #eo: generate_statistic
 }
 
