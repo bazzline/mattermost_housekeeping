@@ -91,22 +91,33 @@ function do_the_housekeeping ()
 ####
 function _cleanup_database_table ()
 {
+    local CURRENT_RUN_ITERATOR=1
     local DATABASE_TABLE_NAME="${1}"
     local DATETIME_LIMIT_AS_TIMESTAMP="${2}"
+    local NUMBER_OF_ENTRIES_TO_PROCESS=0
 
     #bo: cleanup
     _log_message debug "bo: cleanup, table >>${DATABASE_TABLE_NAME}<<."
     _log_message debug "   Using deletion limit of >>${NUMBER_OF_ENTRIES_TO_DELETE_PER_RUN}<<."
 
-    local CURRENT_RUN_ITERATOR=1
     while [[ ${CURRENT_RUN_ITERATOR} -le ${NUMBER_OF_RUNS} ]];
     do
         _log_message info "   Run ${CURRENT_RUN_ITERATOR} / ${NUMBER_OF_RUNS} started."
-        _log_message info "      Executing sql statement >>DELETE FROM ${DATABASE_TABLE_NAME} WHERE ${DATABASE_TABLE_NAME}.CreateAt < ${DATETIME_LIMIT_AS_TIMESTAMP} LIMIT ${NUMBER_OF_ENTRIES_TO_DELETE_PER_RUN};<<."
-        mysql -u ${DATABASE_USER_NAME} -p${DATABASE_USER_PASSWORD} -e "DELETE FROM ${DATABASE_TABLE_NAME} WHERE ${DATABASE_TABLE_NAME}.CreateAt < ${DATETIME_LIMIT_AS_TIMESTAMP} LIMIT ${NUMBER_OF_ENTRIES_TO_DELETE_PER_RUN};" ${DATABASE_NAME}
-        _log_message info "   Run ${CURRENT_RUN_ITERATOR} / ${NUMBER_OF_RUNS} finished."
-        ((++CURRENT_RUN_ITERATOR))
-        sleep 10 #a few seconds does not harm us but helps the dbms to fetch some fresh air
+        _log_message debug "      Executing sql statement >>SELECT COUNT(*) FROM ${DATABASE_NAME} WHERE ${DATABASE_TABLE_NAME}.CreateAt < ${DATETIME_LIMIT_AS_TIMESTAMP};<<."
+
+        NUMBER_OF_ENTRIES_TO_PROCESS = $(mysql -u"${DATABASE_USER_NAME}" -p"${DATABASE_USER_PASSWORD}" -e "SELECT COUNT(*) FROM ${DATABASE_NAME} WHERE ${DATABASE_TABLE_NAME}.CreateAt < ${DATETIME_LIMIT_AS_TIMESTAMP};" ${DATABASE_NAME})
+
+        if [[ ${NUMBER_OF_ENTRIES_TO_PROCESS} -eq 0 ]];
+        then
+            _log_message info "   There are no entries left to process. Exiting the run loop."
+            break
+        else
+            _log_message info "      Executing sql statement >>DELETE FROM ${DATABASE_TABLE_NAME} WHERE ${DATABASE_TABLE_NAME}.CreateAt < ${DATETIME_LIMIT_AS_TIMESTAMP} LIMIT ${NUMBER_OF_ENTRIES_TO_DELETE_PER_RUN};<<."
+            mysql -u ${DATABASE_USER_NAME} -p${DATABASE_USER_PASSWORD} -e "DELETE FROM ${DATABASE_TABLE_NAME} WHERE ${DATABASE_TABLE_NAME}.CreateAt < ${DATETIME_LIMIT_AS_TIMESTAMP} LIMIT ${NUMBER_OF_ENTRIES_TO_DELETE_PER_RUN};" ${DATABASE_NAME}
+            _log_message info "   Run ${CURRENT_RUN_ITERATOR} / ${NUMBER_OF_RUNS} finished."
+            ((++CURRENT_RUN_ITERATOR))
+            sleep 10 #a few seconds does not harm us but helps the dbms to fetch some fresh air
+        fi
     done
 
     _log_message debug "eo: cleanup, table >>${DATABASE_TABLE_NAME}<<."

@@ -15,8 +15,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### To Change
 
-* Check, for each run, if a next run is still needed (abort if there is no more message available for deletion)
-
 ## [Unreleased]
 
 ### Added
@@ -26,6 +24,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+* Implemented check for each deletion run to figure out if there are still entries left to delete or if the run loop can be left
 * Fixed issue in systemd service file creation
 * Fixed systemd detection issue in uninstall script
 
