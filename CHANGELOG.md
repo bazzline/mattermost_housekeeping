@@ -24,6 +24,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+* Changed output of statistics generation script
+
 ## [1.1.0](https://github.com/bazzline/mattermost_housekeeping/tree/1.1.0) - released at 20210902
 
 ### Added

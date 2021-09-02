@@ -46,11 +46,11 @@ function _generate_statistic_per_table ()
 {
     local DATABASE_TABLE_NAME="${1}"
     local DATETIME_LIMIT_AS_TIMESTAMP="${2}"
+    local NUMBER_OF_ALL_ENTRIES=$(mysql -u"${DATABASE_USER_NAME}" -p"${DATABASE_USER_PASSWORD}" "${DATABASE_NAME}" -s -e "SELECT COUNT(Id) FROM ${DATABASE_TABLE_NAME}")
+    local NUMBER_OF_OLD_ENTRIES=$(mysql -u"${DATABASE_USER_NAME}" -p"${DATABASE_USER_PASSWORD}" "${DATABASE_NAME}" -s -e "SELECT COUNT(Id) FROM ${DATABASE_TABLE_NAME} WHERE ${DATABASE_TABLE_NAME}.CreateAt < ${DATETIME_LIMIT_AS_TIMESTAMP}")
 
-    echo ":: Number of entries in total for table >>${DATABASE_TABLE_NAME}<<."
-    mysql -u"${DATABASE_USER_NAME}" -p"${DATABASE_USER_PASSWORD}" "${DATABASE_NAME}" -e "SELECT COUNT(Id) FROM ${DATABASE_TABLE_NAME}"
-    echo ":: Number of posible deleted entries for table >>${DATABASE_TABLE_NAME}<<."
-    mysql -u"${DATABASE_USER_NAME}" -p"${DATABASE_USER_PASSWORD}" "${DATABASE_NAME}" -e "SELECT COUNT(Id) FROM ${DATABASE_TABLE_NAME} WHERE ${DATABASE_TABLE_NAME}.CreateAt < ${DATETIME_LIMIT_AS_TIMESTAMP}"
+    echo ":: Table >>${DATABASE_TABLE_NAME}<< contains >>${NUMBER_OF_ALL_ENTRIES}<< entries in total."
+    echo ":: Table >>${DATABASE_TABLE_NAME}<< contains old >>${NUMBER_OF_OLD_ENTRIES}<< entries."
     #eo: generate_statistic
 }
 
