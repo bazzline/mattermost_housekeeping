@@ -17,6 +17,7 @@ function do_the_housekeeping ()
     #bo: variable declaration
     local EXPECTED_CONFIGURATION_VERSION=1
     local FLAG_BE_VERBOSE_IS_ENABLED=0
+    local FLAG_IS_DRYRUN_IS_ENABLED=0
     local FLAG_SHOW_HELP_IS_ENABLED=0
     local PATH_OF_THE_CURRENT_SCRIPT_BASH=$(cd $(dirname "${BASH_SOURCE[0]}"); pwd)
 
@@ -24,6 +25,10 @@ function do_the_housekeeping ()
     while true;
     do
         case "${1}" in
+            -d | "--dry-run")
+                FLAG_IS_DRYRUN_IS_ENABLED=1
+                shift 1
+                ;;
             -h | "--help")
                 FLAG_SHOW_HELP_IS_ENABLED=1
                 shift 1
@@ -109,6 +114,15 @@ function _cleanup_database_table ()
         _log_message debug "      Executing sql statement >>SELECT COUNT(*) FROM \`${DATABASE_NAME}\` WHERE \`${DATABASE_TABLE_NAME}\`.\`CreateAt\` < ${DATETIME_LIMIT_AS_TIMESTAMP};<<."
 
         NUMBER_OF_ENTRIES_TO_PROCESS = $(mysql -u"${DATABASE_USER_NAME}" -p"${DATABASE_USER_PASSWORD}" -e "SELECT COUNT(*) FROM \`${DATABASE_NAME}\` WHERE \`${DATABASE_TABLE_NAME}\`.\`CreateAt\` < ${DATETIME_LIMIT_AS_TIMESTAMP};" "${DATABASE_NAME}")
+        _log_message debug "      Number of entries to process >>${NUMBER_OF_ENTRIES_TO_PROCESS}<<."
+
+        if [[ ${FLAG_IS_DRYRUN_IS_ENABLED} -eq 1 ]];
+        then
+            #we won't loop a potential gazzillion times.
+            #plus we won't change the default value of CLEANUP_WAS_DONE.
+            _log_message info "   Dry run enabled, skipping all runs."
+            break
+        fi
 
         if [[ ${NUMBER_OF_ENTRIES_TO_PROCESS} -eq 0 ]];
         then
@@ -226,22 +240,27 @@ function _process_table_fileInfo ()
     NUMBER_OF_LINES_IN_LIST_OF_FILE_PATH_TO_DELETE=$(cat ${LIST_OF_FILE_PATH_TO_DELETE} | wc -l)
     _log_message debug "   The file with the path >>${LIST_OF_FILE_PATH_TO_DELETE}<< contains >>${NUMBER_OF_LINES_IN_LIST_OF_FILE_PATH_TO_DELETE}<< lines."
 
-    if [[ ${NUMBER_OF_LINES_IN_LIST_OF_FILE_PATH_TO_DELETE} -eq 0 ]];
+    if [[ ${FLAG_IS_DRYRUN_IS_ENABLED} -eq 1 ]];
     then
-        _log_message debug "   No files will be deleted."
+        _log_message info "   Dry run detected, won't process the file."
     else
-        while IFS= read -r RELATIVE_FILE_PATH
-        do
-            local ABSOLUTE_FILE_PATH="${FILE_SETTINGS_DIRECTORY}/${RELATIVE_FILE_PATH}"
+        if [[ ${NUMBER_OF_LINES_IN_LIST_OF_FILE_PATH_TO_DELETE} -eq 0 ]];
+        then
+            _log_message debug "   No files will be deleted."
+        else
+            while IFS= read -r RELATIVE_FILE_PATH
+            do
+                local ABSOLUTE_FILE_PATH="${FILE_SETTINGS_DIRECTORY}/${RELATIVE_FILE_PATH}"
 
-            if [[ -f "${ABSOLUTE_FILE_PATH}" ]];
-            then
-                _log_message debug "   Removing filepath >>${ABSOLUTE_FILE_PATH}<<."
-                rm "${ABSOLUTE_FILE_PATH}"
-            else
-                _log_message info "   Filepath is invalid >>${ABSOLUTE_FILE_PATH}<<."
-            fi
-        done < "${LIST_OF_FILE_PATH_TO_DELETE}"
+                if [[ -f "${ABSOLUTE_FILE_PATH}" ]];
+                then
+                    _log_message debug "   Removing filepath >>${ABSOLUTE_FILE_PATH}<<."
+                    rm "${ABSOLUTE_FILE_PATH}"
+                else
+                    _log_message info "   Filepath is invalid >>${ABSOLUTE_FILE_PATH}<<."
+                fi
+            done < "${LIST_OF_FILE_PATH_TO_DELETE}"
+        fi
     fi
     ##eo: file removing
 
@@ -297,7 +316,7 @@ function _execute_maintenance ()
 function _show_help_and_exit ()
 {
     echo ":: Usage"
-    echo "   do_the_housekeeping.sh [-h|--help] [-v|--verbose]"
+    echo "   do_the_housekeeping.sh [-d|--dry-run] [-h|--help] [-v|--verbose]"
 
     exit;
 }
