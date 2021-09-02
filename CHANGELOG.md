@@ -9,7 +9,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### To Add
 
-* Add flag `-v|--verbose`
 * Add support for [postgresql](https://github.com/aljazceru/mattermost-retention)
 * Add support for using exising `config.json`
 * Try to add a arch linux aur package
@@ -23,6 +22,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 
 * Added flag `-h|--help`
+* Added flag `-v|--verbose` - if verbose is enabled, each logged message will be echoed too
 
 ### Changed
 
