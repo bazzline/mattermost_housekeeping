@@ -64,5 +64,5 @@ systemctl enable hourly-mattermost-housekeeping.timer
 
 ```
 screen
-/opt/net.bazzline/mattermost_housekeeping/bin/do_the_housekeeping.sh
+/opt/net.bazzline/mattermost_housekeeping/bin/do_the_housekeeping.sh -v
 ```

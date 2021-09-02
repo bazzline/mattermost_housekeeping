@@ -19,6 +19,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+* Added documentation
+
 ### Changed
 
 ## [1.1.0](https://github.com/bazzline/mattermost_housekeeping/tree/1.1.0) - released at 20210902
