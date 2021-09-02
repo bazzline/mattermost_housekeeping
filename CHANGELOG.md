@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+* Encapsulated username, password and databasename in the mysql cli calls with >>"<< and encapsulated each column and table in the mysql cli calls with >>`<<
 * Implemented check for each deletion run to figure out if there are still entries left to delete or if the run loop can be left
 * Fixed issue in systemd service file creation
 * Fixed systemd detection issue in uninstall script

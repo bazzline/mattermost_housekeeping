@@ -103,17 +103,17 @@ function _cleanup_database_table ()
     while [[ ${CURRENT_RUN_ITERATOR} -le ${NUMBER_OF_RUNS} ]];
     do
         _log_message info "   Run ${CURRENT_RUN_ITERATOR} / ${NUMBER_OF_RUNS} started."
-        _log_message debug "      Executing sql statement >>SELECT COUNT(*) FROM ${DATABASE_NAME} WHERE ${DATABASE_TABLE_NAME}.CreateAt < ${DATETIME_LIMIT_AS_TIMESTAMP};<<."
+        _log_message debug "      Executing sql statement >>SELECT COUNT(*) FROM \`${DATABASE_NAME}\` WHERE \`${DATABASE_TABLE_NAME}\`.\`CreateAt\` < ${DATETIME_LIMIT_AS_TIMESTAMP};<<."
 
-        NUMBER_OF_ENTRIES_TO_PROCESS = $(mysql -u"${DATABASE_USER_NAME}" -p"${DATABASE_USER_PASSWORD}" -e "SELECT COUNT(*) FROM ${DATABASE_NAME} WHERE ${DATABASE_TABLE_NAME}.CreateAt < ${DATETIME_LIMIT_AS_TIMESTAMP};" ${DATABASE_NAME})
+        NUMBER_OF_ENTRIES_TO_PROCESS = $(mysql -u"${DATABASE_USER_NAME}" -p"${DATABASE_USER_PASSWORD}" -e "SELECT COUNT(*) FROM \`${DATABASE_NAME}\` WHERE \`${DATABASE_TABLE_NAME}\`.\`CreateAt\` < ${DATETIME_LIMIT_AS_TIMESTAMP};" "${DATABASE_NAME}")
 
         if [[ ${NUMBER_OF_ENTRIES_TO_PROCESS} -eq 0 ]];
         then
             _log_message info "   There are no entries left to process. Exiting the run loop."
             break
         else
-            _log_message info "      Executing sql statement >>DELETE FROM ${DATABASE_TABLE_NAME} WHERE ${DATABASE_TABLE_NAME}.CreateAt < ${DATETIME_LIMIT_AS_TIMESTAMP} LIMIT ${NUMBER_OF_ENTRIES_TO_DELETE_PER_RUN};<<."
-            mysql -u ${DATABASE_USER_NAME} -p${DATABASE_USER_PASSWORD} -e "DELETE FROM ${DATABASE_TABLE_NAME} WHERE ${DATABASE_TABLE_NAME}.CreateAt < ${DATETIME_LIMIT_AS_TIMESTAMP} LIMIT ${NUMBER_OF_ENTRIES_TO_DELETE_PER_RUN};" ${DATABASE_NAME}
+            _log_message info "      Executing sql statement >>DELETE FROM \`${DATABASE_TABLE_NAME}\` WHERE \`${DATABASE_TABLE_NAME}\`.\`CreateAt\` < ${DATETIME_LIMIT_AS_TIMESTAMP} LIMIT ${NUMBER_OF_ENTRIES_TO_DELETE_PER_RUN};<<."
+            mysql -u"${DATABASE_USER_NAME}" -p"${DATABASE_USER_PASSWORD}" -e "DELETE FROM \`${DATABASE_TABLE_NAME}\` WHERE \`${DATABASE_TABLE_NAME}\`.\`CreateAt\` < ${DATETIME_LIMIT_AS_TIMESTAMP} LIMIT ${NUMBER_OF_ENTRIES_TO_DELETE_PER_RUN};" "${DATABASE_NAME}"
             _log_message info "   Run ${CURRENT_RUN_ITERATOR} / ${NUMBER_OF_RUNS} finished."
             ((++CURRENT_RUN_ITERATOR))
             sleep 10 #a few seconds does not harm us but helps the dbms to fetch some fresh air
@@ -183,14 +183,14 @@ function _process_table_fileInfo ()
     ##eo: setup
 
     ##bo: list creation
-    _log_message debug "   Executing sql statenemt >>SELECT Path FROM ${DATABASE_TABLE_NAME} WHERE CreateAt < ${DATETIME_LIMIT_AS_TIMESTAMP} INTO OUTFILE '${LIST_OF_FILE_INFO_PATH}' FIELDS TERMINATED BY ',' ENCLOSED BY '' LINES TERMINATED BY '\n';<<"
-    mysql -u ${DATABASE_USER_NAME} -p${DATABASE_USER_PASSWORD} -e "SELECT Path FROM ${DATABASE_TABLE_NAME} WHERE CreateAt < ${DATETIME_LIMIT_AS_TIMESTAMP} INTO OUTFILE '${LIST_OF_FILE_INFO_PATH}' FIELDS TERMINATED BY ',' ENCLOSED BY '' LINES TERMINATED BY '\n';" ${DATABASE_NAME}
+    _log_message debug "   Executing sql statenemt >>SELECT \`Path\` FROM \`${DATABASE_TABLE_NAME}\` WHERE \`CreateAt\` < ${DATETIME_LIMIT_AS_TIMESTAMP} INTO OUTFILE '${LIST_OF_FILE_INFO_PATH}' FIELDS TERMINATED BY ',' ENCLOSED BY '' LINES TERMINATED BY '\n';<<"
+    mysql -u"${DATABASE_USER_NAME}" -p"${DATABASE_USER_PASSWORD}" -e "SELECT \`Path\` FROM \`${DATABASE_TABLE_NAME}\` WHERE \`CreateAt\` < ${DATETIME_LIMIT_AS_TIMESTAMP} INTO OUTFILE '${LIST_OF_FILE_INFO_PATH}' FIELDS TERMINATED BY ',' ENCLOSED BY '' LINES TERMINATED BY '\n';" "${DATABASE_NAME}"
 
-    _log_message debug "   Executing sql statement >>SELECT PreviewPath FROM ${DATABASE_TABLE_NAME} WHERE CreateAt < ${DATETIME_LIMIT_AS_TIMESTAMP} AND length(PreviewPath) > 0 INTO OUTFILE '${LIST_OF_FILE_INFO_PREVIEWPATH}' FIELDS TERMINATED BY ',' ENCLOSED BY '' LINES TERMINATED BY '\n';<<"
-    mysql -u ${DATABASE_USER_NAME} -p${DATABASE_USER_PASSWORD} -e "SELECT PreviewPath FROM ${DATABASE_TABLE_NAME} WHERE CreateAt < ${DATETIME_LIMIT_AS_TIMESTAMP} AND length(PreviewPath) > 0 INTO OUTFILE '${LIST_OF_FILE_INFO_PREVIEWPATH}' FIELDS TERMINATED BY ',' ENCLOSED BY '' LINES TERMINATED BY '\n';" ${DATABASE_NAME}
+    _log_message debug "   Executing sql statement >>SELECT \`PreviewPath\` FROM \`${DATABASE_TABLE_NAME}\` WHERE \`CreateAt\` < ${DATETIME_LIMIT_AS_TIMESTAMP} AND length(\`PreviewPath\`) > 0 INTO OUTFILE '${LIST_OF_FILE_INFO_PREVIEWPATH}' FIELDS TERMINATED BY ',' ENCLOSED BY '' LINES TERMINATED BY '\n';<<"
+    mysql -u"${DATABASE_USER_NAME}" -p"${DATABASE_USER_PASSWORD}" -e "SELECT \`PreviewPath\` FROM \`${DATABASE_TABLE_NAME}\` WHERE \`CreateAt\` < ${DATETIME_LIMIT_AS_TIMESTAMP} AND length(\`PreviewPath\`) > 0 INTO OUTFILE '${LIST_OF_FILE_INFO_PREVIEWPATH}' FIELDS TERMINATED BY ',' ENCLOSED BY '' LINES TERMINATED BY '\n';" "${DATABASE_NAME}"
 
-    _log_message debug "   Executing sql statement >>SELECT ThumbnailPath FROM ${DATABASE_TABLE_NAME} WHERE CreateAt < ${DATETIME_LIMIT_AS_TIMESTAMP} AND length(ThumbnailPath) > 0 INTO OUTFILE '${LIST_OF_FILE_INFO_THUMBNAILPATH}' FIELDS TERMINATED BY ',' ENCLOSED BY '' LINES TERMINATED BY '\n'<<;"
-    mysql -u ${DATABASE_USER_NAME} -p${DATABASE_USER_PASSWORD} -e "SELECT ThumbnailPath FROM ${DATABASE_TABLE_NAME} WHERE CreateAt < ${DATETIME_LIMIT_AS_TIMESTAMP} AND length(ThumbnailPath) > 0 INTO OUTFILE '${LIST_OF_FILE_INFO_THUMBNAILPATH}' FIELDS TERMINATED BY ',' ENCLOSED BY '' LINES TERMINATED BY '\n';" ${DATABASE_NAME}
+    _log_message debug "   Executing sql statement >>SELECT \`ThumbnailPath\` FROM \`${DATABASE_TABLE_NAME}\` WHERE \`CreateAt\` < ${DATETIME_LIMIT_AS_TIMESTAMP} AND length(\`ThumbnailPath\`) > 0 INTO OUTFILE '${LIST_OF_FILE_INFO_THUMBNAILPATH}' FIELDS TERMINATED BY ',' ENCLOSED BY '' LINES TERMINATED BY '\n'<<;"
+    mysql -u"${DATABASE_USER_NAME}" -p"${DATABASE_USER_PASSWORD}" -e "SELECT \`ThumbnailPath\` FROM \`${DATABASE_TABLE_NAME}\` WHERE \`CreateAt\` < ${DATETIME_LIMIT_AS_TIMESTAMP} AND length(\`ThumbnailPath\`) > 0 INTO OUTFILE '${LIST_OF_FILE_INFO_THUMBNAILPATH}' FIELDS TERMINATED BY ',' ENCLOSED BY '' LINES TERMINATED BY '\n';" "${DATABASE_NAME}"
 
     cat "${LIST_OF_FILE_INFO_PATH}" > "${LIST_OF_FILE_PATH_TO_DELETE}"
     cat "${LIST_OF_FILE_INFO_PREVIEWPATH}" >> "${LIST_OF_FILE_PATH_TO_DELETE}"
@@ -234,7 +234,7 @@ function _execute_maintenance ()
     if [[ ${EXECUTE_DATABASE_CHECK} -eq 1 ]];
     then
         _log_message notice "   Starting >>check<< for database >>${DATABASE_NAME} ${DATABASE_TABLE_NAME}<<"
-        mysqlcheck -u ${DATABASE_USER_NAME} -p${DATABASE_USER_PASSWORD} --check --auto-repair ${DATABASE_NAME} ${DATABASE_TABLE_NAME}
+        mysqlcheck -u"${DATABASE_USER_NAME}" -p"${DATABASE_USER_PASSWORD}" --check --auto-repair "${DATABASE_NAME}" "${DATABASE_TABLE_NAME}"
     else
         _log_message debug "   Skipping >>check<< for database."
     fi
@@ -243,7 +243,7 @@ function _execute_maintenance ()
     then
         #   reclaim unused disk space
         _log_message notice "   Starting >>optimize<< for database >>${DATABASE_NAME} ${DATABASE_TABLE_NAME}<<"
-        mysqlcheck -u ${DATABASE_USER_NAME} -p${DATABASE_USER_PASSWORD} --optimize ${DATABASE_NAME} ${DATABASE_TABLE_NAME}
+        mysqlcheck -u"${DATABASE_USER_NAME}" -p"${DATABASE_USER_PASSWORD}" --optimize "${DATABASE_NAME}" "${DATABASE_TABLE_NAME}"
     else
         _log_message debug "   Skipping >>optimize<< for database."
     fi
@@ -252,7 +252,7 @@ function _execute_maintenance ()
     then
         #   rebuild and optimize indexes
         _log_message notice "   Starting >>analyze<< for database >>${DATABASE_NAME} ${DATABASE_TABLE_NAME}<<"
-        mysqlcheck -u ${DATABASE_USER_NAME} -p${DATABASE_USER_PASSWORD} --analyze ${DATABASE_NAME} ${DATABASE_TABLE_NAME}
+        mysqlcheck -u"${DATABASE_USER_NAME}" -p"${DATABASE_USER_PASSWORD}" --analyze "${DATABASE_NAME}" "${DATABASE_TABLE_NAME}"
     else
         _log_message debug "   Skipping >>analyze<< for database."
     fi
