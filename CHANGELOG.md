@@ -19,6 +19,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+### Changed
+
+## [1.1.0](https://github.com/bazzline/mattermost_housekeeping/tree/1.1.0) - released at 20210902
+
+### Added
+
 * Added flag `-d|--dry-run`
 * Added flag `-h|--help`
 * Added flag `-v|--verbose` - if verbose is enabled, each logged message will be echoed too
