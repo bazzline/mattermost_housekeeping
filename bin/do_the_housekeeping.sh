@@ -88,9 +88,12 @@ function do_the_housekeeping ()
 ####
 # @param: <string: database table name>
 # @param: <int: datetime limit as timestamp>
+#
+# @return: <int: 0|1> - if at least one entry was deleted 1, else 0
 ####
 function _cleanup_database_table ()
 {
+    local CLEANUP_WAS_DONE=0
     local CURRENT_RUN_ITERATOR=1
     local DATABASE_TABLE_NAME="${1}"
     local DATETIME_LIMIT_AS_TIMESTAMP="${2}"
@@ -114,6 +117,7 @@ function _cleanup_database_table ()
         else
             _log_message info "      Executing sql statement >>DELETE FROM \`${DATABASE_TABLE_NAME}\` WHERE \`${DATABASE_TABLE_NAME}\`.\`CreateAt\` < ${DATETIME_LIMIT_AS_TIMESTAMP} LIMIT ${NUMBER_OF_ENTRIES_TO_DELETE_PER_RUN};<<."
             mysql -u"${DATABASE_USER_NAME}" -p"${DATABASE_USER_PASSWORD}" -e "DELETE FROM \`${DATABASE_TABLE_NAME}\` WHERE \`${DATABASE_TABLE_NAME}\`.\`CreateAt\` < ${DATETIME_LIMIT_AS_TIMESTAMP} LIMIT ${NUMBER_OF_ENTRIES_TO_DELETE_PER_RUN};" "${DATABASE_NAME}"
+            CLEANUP_WAS_DONE=1
             _log_message info "   Run ${CURRENT_RUN_ITERATOR} / ${NUMBER_OF_RUNS} finished."
             ((++CURRENT_RUN_ITERATOR))
             sleep 10 #a few seconds does not harm us but helps the dbms to fetch some fresh air
@@ -121,6 +125,8 @@ function _cleanup_database_table ()
     done
 
     _log_message debug "eo: cleanup, table >>${DATABASE_TABLE_NAME}<<."
+
+    return ${CLEANUP_WAS_DONE};
 }
 
 function _log_message ()
@@ -137,30 +143,49 @@ function _log_message ()
 }
 
 ####
+# @param: <string: database table name>
 # @param: <int: datetime limit as timestamp>
 ####
-function _process_table_posts ()
+function _process_table ()
 {
-    local DATABASE_TABLE_NAME="Posts"
-    local DATETIME_LIMIT_AS_TIMESTAMP="${1}"
+    local DATABASE_TABLE_NAME=${1}
+    local DATETIME_LIMIT_AS_TIMESTAMP="${2}"
 
     _log_message debug ":: Starting table >>${DATABASE_TABLE_NAME}<< cleanup."
     _cleanup_database_table ${DATABASE_TABLE_NAME} ${DATETIME_LIMIT_AS_TIMESTAMP}
 
-    _execute_maintenance ${DATABASE_TABLE_NAME}
-    _log_message debug ":: Finished table >>${DATABASE_TABLE_NAME}<< cleanup."
+    if [[ ${?} -ne 0 ]];
+    then
+        _execute_maintenance ${DATABASE_TABLE_NAME}
+        _log_message debug ":: Finished table >>${DATABASE_TABLE_NAME}<< maintenance."
+    else
+        _log_message debug ":: No cleanup was done, no table >>${DATABASE_TABLE_NAME}<< maintenance needed."
+    fi
 }
 
 ####
+# @param: <int: datetime limit as timestamp>
+####
+function _process_table_posts ()
+{
+    _process_table "Posts" ${1}
+}
+
+####
+# Fetches all file paths from the database to remove the files from the local storage.
+# Deletes the data in the table FileInfo
+#
 # @param: <int: datetime limit as timestamp>
 ####
 function _process_table_fileInfo ()
 {
     local DATABASE_TABLE_NAME="FileInfo"
     local DATETIME_LIMIT_AS_TIMESTAMP="${1}"
+    local NUMBER_OF_LINES_IN_LIST_OF_FILE_PATH_TO_DELETE=0
 
     #bo: file system cleanup
     _log_message debug ":: Starting cleanup of path >>${FILE_SETTINGS_DIRECTORY}<<."
+
     ##bo: setup
     local TEMPORARY_DIRECTORY_PATH=$(mktemp -d)
 
@@ -198,18 +223,26 @@ function _process_table_fileInfo ()
     ##eo: list creation
 
     ##bo: file removing
-    while IFS= read -r RELATIVE_FILE_PATH
-    do
-        local ABSOLUTE_FILE_PATH="${FILE_SETTINGS_DIRECTORY}/${RELATIVE_FILE_PATH}"
+    NUMBER_OF_LINES_IN_LIST_OF_FILE_PATH_TO_DELETE=$(cat ${LIST_OF_FILE_PATH_TO_DELETE} | wc -l)
+    _log_message debug "   The file with the path >>${LIST_OF_FILE_PATH_TO_DELETE}<< contains >>${NUMBER_OF_LINES_IN_LIST_OF_FILE_PATH_TO_DELETE}<< lines."
 
-        if [[ -f "${ABSOLUTE_FILE_PATH}" ]];
-        then
-            _log_message debug "   Removing filepath >>${ABSOLUTE_FILE_PATH}<<."
-            rm "${ABSOLUTE_FILE_PATH}"
-        else
-            _log_message info "   Filepath is invalid >>${ABSOLUTE_FILE_PATH}<<."
-        fi
-    done < "${LIST_OF_FILE_PATH_TO_DELETE}"
+    if [[ ${NUMBER_OF_LINES_IN_LIST_OF_FILE_PATH_TO_DELETE} -eq 0 ]];
+    then
+        _log_message debug "   No files will be deleted."
+    else
+        while IFS= read -r RELATIVE_FILE_PATH
+        do
+            local ABSOLUTE_FILE_PATH="${FILE_SETTINGS_DIRECTORY}/${RELATIVE_FILE_PATH}"
+
+            if [[ -f "${ABSOLUTE_FILE_PATH}" ]];
+            then
+                _log_message debug "   Removing filepath >>${ABSOLUTE_FILE_PATH}<<."
+                rm "${ABSOLUTE_FILE_PATH}"
+            else
+                _log_message info "   Filepath is invalid >>${ABSOLUTE_FILE_PATH}<<."
+            fi
+        done < "${LIST_OF_FILE_PATH_TO_DELETE}"
+    fi
     ##eo: file removing
 
     ##bo: teardown
@@ -219,8 +252,9 @@ function _process_table_fileInfo ()
     _log_message debug ":: Finished cleanup of path >>${FILE_SETTINGS_DIRECTORY}<<."
     #eo: file system cleanup
 
-    _cleanup_database_table ${DATABASE_TABLE_NAME} ${DATETIME_LIMIT_AS_TIMESTAMP}
-    _log_message debug ":: Finished table >>${DATABASE_TABLE_NAME}<< cleanup."
+    #bo: table processing
+    _process_table "${DATABASE_TABLE_NAME}" ${DATETIME_LIMIT_AS_TIMESTAMP}
+    #eo: table processing
 }
 
 function _execute_maintenance ()

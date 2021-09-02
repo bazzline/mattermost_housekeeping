@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 * Added flag `-h|--help`
 * Added flag `-v|--verbose` - if verbose is enabled, each logged message will be echoed too
+* Added logging for number of files to delete from local storage
 
 ### Changed
 
