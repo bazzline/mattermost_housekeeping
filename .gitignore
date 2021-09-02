@@ -1,3 +1,4 @@
 data/local_config.sh
 data/local_config.sh.save
+data/mattermost-housekeeping.service
 data/.is_installed
