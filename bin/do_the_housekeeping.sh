@@ -113,7 +113,7 @@ function _cleanup_database_table ()
         _log_message info "   Run ${CURRENT_RUN_ITERATOR} / ${NUMBER_OF_RUNS} started."
         _log_message debug "      Executing sql statement >>SELECT COUNT(*) FROM \`${DATABASE_TABLE_NAME}\` WHERE \`${DATABASE_TABLE_NAME}\`.\`CreateAt\` < ${DATETIME_LIMIT_AS_TIMESTAMP};<<."
 
-        NUMBER_OF_ENTRIES_TO_PROCESS=$(mysql -u"${DATABASE_USER_NAME}" -p"${DATABASE_USER_PASSWORD}" "${DATABASE_NAME}" -e "SELECT COUNT(*) FROM \`${DATABASE_TABLE_NAME}\` WHERE \`${DATABASE_TABLE_NAME}\`.\`CreateAt\` < ${DATETIME_LIMIT_AS_TIMESTAMP};")
+        NUMBER_OF_ENTRIES_TO_PROCESS=$(mysql -u"${DATABASE_USER_NAME}" -p"${DATABASE_USER_PASSWORD}" "${DATABASE_NAME}" -s -e "SELECT COUNT(*) FROM \`${DATABASE_TABLE_NAME}\` WHERE \`${DATABASE_TABLE_NAME}\`.\`CreateAt\` < ${DATETIME_LIMIT_AS_TIMESTAMP};")
         _log_message debug "      Number of entries to process >>${NUMBER_OF_ENTRIES_TO_PROCESS}<<."
 
         if [[ ${FLAG_IS_DRYRUN_IS_ENABLED} -eq 1 ]];
