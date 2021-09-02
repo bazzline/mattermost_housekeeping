@@ -133,7 +133,7 @@ function _log_message ()
         echo "[${LOG_LEVEL}]: ${LOG_MESSAGE}"
     fi
 
-    _log_message ${LOG_LEVEL} ${LOG_MESSAGE}
+    logger -i -p cron.${LOG_LEVEL} ${LOG_MESSAGE}
 }
 
 ####
