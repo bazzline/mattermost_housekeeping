@@ -16,7 +16,33 @@ function do_the_housekeeping ()
 {
     #bo: variable declaration
     local EXPECTED_CONFIGURATION_VERSION=1
+    local FLAG_BE_VERBOSE_IS_ENABLED=0
+    local FLAG_SHOW_HELP_IS_ENABLED=0
     local PATH_OF_THE_CURRENT_SCRIPT_BASH=$(cd $(dirname "${BASH_SOURCE[0]}"); pwd)
+
+    #   bo: flag evaluation
+    while true;
+    do
+        case "${1}" in
+            -h | "--help")
+                FLAG_SHOW_HELP_IS_ENABLED=1
+                shift 1
+                ;;
+            -v | "--verbose")
+                FLAG_BE_VERBOSE_IS_ENABLED=1
+                shift 1
+                ;;
+            *)
+                break
+                ;;
+        esac
+    done
+    #   eo: flag evaluation
+
+    if [[ ${FLAG_SHOW_HELP_IS_ENABLED} -eq 1 ]];
+    then
+        _show_help_and_exit
+    fi
 
     #bin: executables, data: dynamic or static data files, source: templates or not executable no data files
     local PATH_TO_THE_LOCAL_CONFIGURATION_FILE="${PATH_OF_THE_CURRENT_SCRIPT_BASH}/../data/local_config.sh"
@@ -210,4 +236,12 @@ function _execute_maintenance ()
     #eo: maintenance
 }
 
-do_the_housekeeping
+function _show_help_and_exit ()
+{
+    echo ":: Usage"
+    echo "   do_the_housekeeping.sh [-h|--help] [-v|--verbose]"
+
+    exit;
+}
+
+do_the_housekeeping ${@}

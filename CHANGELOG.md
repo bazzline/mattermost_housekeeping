@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### To Add
 
+* Add flag `-v|--verbose`
 * Add support for [postgresql](https://github.com/aljazceru/mattermost-retention)
 * Add support for using exising `config.json`
 * Try to add a arch linux aur package
@@ -21,9 +22,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+* Added flag `-h|--help`
+
 ### Changed
 
-* fixed systemd detection issue in uninstall script
+* Fixed issue in systemd service file creation
+* Fixed systemd detection issue in uninstall script
 
 ## [1.0.0](https://github.com/bazzline/mattermost_housekeeping/tree/1.0.0) - released at 20210521
 
