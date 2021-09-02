@@ -113,7 +113,7 @@ function _cleanup_database_table ()
         _log_message info "   Run ${CURRENT_RUN_ITERATOR} / ${NUMBER_OF_RUNS} started."
         _log_message debug "      Executing sql statement >>SELECT COUNT(*) FROM \`${DATABASE_TABLE_NAME}\` WHERE \`${DATABASE_TABLE_NAME}\`.\`CreateAt\` < ${DATETIME_LIMIT_AS_TIMESTAMP};<<."
 
-        NUMBER_OF_ENTRIES_TO_PROCESS = $(mysql -u"${DATABASE_USER_NAME}" -p"${DATABASE_USER_PASSWORD}" "${DATABASE_NAME}" -e "SELECT COUNT(*) FROM \`${DATABASE_TABLE_NAME}\` WHERE \`${DATABASE_TABLE_NAME}\`.\`CreateAt\` < ${DATETIME_LIMIT_AS_TIMESTAMP};")
+        NUMBER_OF_ENTRIES_TO_PROCESS=$(mysql -u"${DATABASE_USER_NAME}" -p"${DATABASE_USER_PASSWORD}" "${DATABASE_NAME}" -e "SELECT COUNT(*) FROM \`${DATABASE_TABLE_NAME}\` WHERE \`${DATABASE_TABLE_NAME}\`.\`CreateAt\` < ${DATETIME_LIMIT_AS_TIMESTAMP};")
         _log_message debug "      Number of entries to process >>${NUMBER_OF_ENTRIES_TO_PROCESS}<<."
 
         if [[ ${FLAG_IS_DRYRUN_IS_ENABLED} -eq 1 ]];
@@ -222,18 +222,11 @@ function _process_table_fileInfo ()
     ##eo: setup
 
     ##bo: list creation
-    _log_message debug "   Executing sql statenemt >>SELECT \`Path\` FROM \`${DATABASE_TABLE_NAME}\` WHERE \`CreateAt\` < ${DATETIME_LIMIT_AS_TIMESTAMP} INTO OUTFILE '${LIST_OF_FILE_INFO_PATH}' FIELDS TERMINATED BY ',' ENCLOSED BY '' LINES TERMINATED BY '\n';<<"
-    mysql -u"${DATABASE_USER_NAME}" -p"${DATABASE_USER_PASSWORD}" "${DATABASE_NAME}" -e "SELECT \`Path\` FROM \`${DATABASE_TABLE_NAME}\` WHERE \`CreateAt\` < ${DATETIME_LIMIT_AS_TIMESTAMP} INTO OUTFILE '${LIST_OF_FILE_INFO_PATH}' FIELDS TERMINATED BY ',' ENCLOSED BY '' LINES TERMINATED BY '\n';"
+    touch "${LIST_OF_FILE_PATH_TO_DELETE}"
 
-    _log_message debug "   Executing sql statement >>SELECT \`PreviewPath\` FROM \`${DATABASE_TABLE_NAME}\` WHERE \`CreateAt\` < ${DATETIME_LIMIT_AS_TIMESTAMP} AND length(\`PreviewPath\`) > 0 INTO OUTFILE '${LIST_OF_FILE_INFO_PREVIEWPATH}' FIELDS TERMINATED BY ',' ENCLOSED BY '' LINES TERMINATED BY '\n';<<"
-    mysql -u"${DATABASE_USER_NAME}" -p"${DATABASE_USER_PASSWORD}" "${DATABASE_NAME}" -e "SELECT \`PreviewPath\` FROM \`${DATABASE_TABLE_NAME}\` WHERE \`CreateAt\` < ${DATETIME_LIMIT_AS_TIMESTAMP} AND length(\`PreviewPath\`) > 0 INTO OUTFILE '${LIST_OF_FILE_INFO_PREVIEWPATH}' FIELDS TERMINATED BY ',' ENCLOSED BY '' LINES TERMINATED BY '\n';"
-
-    _log_message debug "   Executing sql statement >>SELECT \`ThumbnailPath\` FROM \`${DATABASE_TABLE_NAME}\` WHERE \`CreateAt\` < ${DATETIME_LIMIT_AS_TIMESTAMP} AND length(\`ThumbnailPath\`) > 0 INTO OUTFILE '${LIST_OF_FILE_INFO_THUMBNAILPATH}' FIELDS TERMINATED BY ',' ENCLOSED BY '' LINES TERMINATED BY '\n'<<;"
-    mysql -u"${DATABASE_USER_NAME}" -p"${DATABASE_USER_PASSWORD}" "${DATABASE_NAME}" -e "SELECT \`ThumbnailPath\` FROM \`${DATABASE_TABLE_NAME}\` WHERE \`CreateAt\` < ${DATETIME_LIMIT_AS_TIMESTAMP} AND length(\`ThumbnailPath\`) > 0 INTO OUTFILE '${LIST_OF_FILE_INFO_THUMBNAILPATH}' FIELDS TERMINATED BY ',' ENCLOSED BY '' LINES TERMINATED BY '\n';"
-
-    cat "${LIST_OF_FILE_INFO_PATH}" > "${LIST_OF_FILE_PATH_TO_DELETE}"
-    cat "${LIST_OF_FILE_INFO_PREVIEWPATH}" >> "${LIST_OF_FILE_PATH_TO_DELETE}"
-    cat "${LIST_OF_FILE_INFO_THUMBNAILPATH}" >> "${LIST_OF_FILE_PATH_TO_DELETE}"
+    __fetch_file_paths_from_table "Path" "${LIST_OF_FILE_INFO_PATH}"
+    __fetch_file_paths_from_table "PreviewPath" "${LIST_OF_FILE_INFO_PREVIEWPATH}"
+    __fetch_file_paths_from_table "ThumbnailPath" "${LIST_OF_FILE_INFO_THUMBNAILPATH}"
     ##eo: list creation
 
     ##bo: file removing
@@ -274,6 +267,29 @@ function _process_table_fileInfo ()
     #bo: table processing
     _process_table "${DATABASE_TABLE_NAME}" ${DATETIME_LIMIT_AS_TIMESTAMP}
     #eo: table processing
+}
+
+####
+# @param: <string: column name>
+# @param: <string: file path>
+####
+function __fetch_file_paths_from_table ()
+{
+    local COLUMN_NAME="${1}"
+    local NUMBER_OF_LINES_IN_FILE_PATH=0
+    local FILE_PATH="${2}"
+
+    _log_message debug "   Executing sql statenemt >>SELECT \`${COLUMN_NAME}\` FROM \`${DATABASE_TABLE_NAME}\` WHERE \`CreateAt\` < ${DATETIME_LIMIT_AS_TIMESTAMP} INTO OUTFILE '${LIST_OF_FILE_INFO_PATH}' FIELDS TERMINATED BY ',' ENCLOSED BY '' LINES TERMINATED BY '\n';<<"
+    mysql -u"${DATABASE_USER_NAME}" -p"${DATABASE_USER_PASSWORD}" "${DATABASE_NAME}" -e "SELECT \`${COLUMN_NAME}\` FROM \`${DATABASE_TABLE_NAME}\` WHERE \`CreateAt\` < ${DATETIME_LIMIT_AS_TIMESTAMP} INTO OUTFILE '${LIST_OF_FILE_INFO_PATH}' FIELDS TERMINATED BY ',' ENCLOSED BY '' LINES TERMINATED BY '\n';"
+
+    if [[ -f "${FILE_PATH}" ]];
+    then
+        NUMBER_OF_LINES_IN_FILE_PATH=$(cat "${FILE_PATH}" | wc -l)
+        _log_message debug "   Adding >>${NUMBER_OF_LINES_IN_FILE_PATH}<< lines from file >>${FILE_PATH}<< to >>${LIST_OF_FILE_PATH_TO_DELETE}<<."
+        cat "${FILE_PATH}" >> "${LIST_OF_FILE_PATH_TO_DELETE}"
+    else
+        _log_message debug "   File >>${FILE_PATH}<< does not exist, looks like no fitting entry exists.."
+    fi
 }
 
 function _execute_maintenance ()
