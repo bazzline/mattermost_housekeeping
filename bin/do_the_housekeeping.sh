@@ -280,13 +280,18 @@ function __fetch_file_paths_from_table ()
     local FILE_PATH="${2}"
 
     _log_message debug "   Executing sql statenemt >>SELECT \`${COLUMN_NAME}\` FROM \`${DATABASE_TABLE_NAME}\` WHERE \`CreateAt\` < ${DATETIME_LIMIT_AS_TIMESTAMP} INTO OUTFILE '${LIST_OF_FILE_INFO_PATH}' FIELDS TERMINATED BY ',' ENCLOSED BY '' LINES TERMINATED BY '\n';<<"
-    mysql -u"${DATABASE_USER_NAME}" -p"${DATABASE_USER_PASSWORD}" "${DATABASE_NAME}" -e "SELECT \`${COLUMN_NAME}\` FROM \`${DATABASE_TABLE_NAME}\` WHERE \`CreateAt\` < ${DATETIME_LIMIT_AS_TIMESTAMP} INTO OUTFILE '${LIST_OF_FILE_INFO_PATH}' FIELDS TERMINATED BY ',' ENCLOSED BY '' LINES TERMINATED BY '\n';"
+    mysql -u"${DATABASE_USER_NAME}" -p"${DATABASE_USER_PASSWORD}" "${DATABASE_NAME}" -e "SELECT \`${COLUMN_NAME}\` FROM \`${DATABASE_TABLE_NAME}\` WHERE \`CreateAt\` < ${DATETIME_LIMIT_AS_TIMESTAMP} INTO OUTFILE '${FILE_PATH}' FIELDS TERMINATED BY ',' ENCLOSED BY '' LINES TERMINATED BY '\n';"
 
     if [[ -f "${FILE_PATH}" ]];
     then
         NUMBER_OF_LINES_IN_FILE_PATH=$(cat "${FILE_PATH}" | wc -l)
-        _log_message debug "   Adding >>${NUMBER_OF_LINES_IN_FILE_PATH}<< lines from file >>${FILE_PATH}<< to >>${LIST_OF_FILE_PATH_TO_DELETE}<<."
-        cat "${FILE_PATH}" >> "${LIST_OF_FILE_PATH_TO_DELETE}"
+            _log_message debug "   File >>${FILE_PATH} contains >>${NUMBER_OF_LINES_IN_FILE_PATH}<<."
+
+        if [[ ${NUMBER_OF_LINES_IN_FILE_PATH} -gt 0 ]];
+        then
+            _log_message debug "   Adding >>${NUMBER_OF_LINES_IN_FILE_PATH}<< lines from file >>${FILE_PATH}<< to >>${LIST_OF_FILE_PATH_TO_DELETE}<<."
+            cat "${FILE_PATH}" >> "${LIST_OF_FILE_PATH_TO_DELETE}"
+        fi
     else
         _log_message debug "   File >>${FILE_PATH}<< does not exist, looks like no fitting entry exists.."
     fi
