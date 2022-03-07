@@ -28,7 +28,7 @@ function generate_statistics ()
     #eo: variable declaration
 
     #bo: generate_statistic
-    local DATETIME_LIMIT_AS_STRIMG=$(date -d "now - ${DAYS_TO_KEEP_IN_THE_PAST} days" +%Y-%m-%d_%H:%M:%S)
+    local DATETIME_LIMIT_AS_STRING=$(date -d "now - ${DAYS_TO_KEEP_IN_THE_PAST} days" +%Y-%m-%d_%H:%M:%S)
     local DATETIME_LIMIT_AS_TIMESTAMP=$(date -d "now - ${DAYS_TO_KEEP_IN_THE_PAST} days" +%s)
 
     local DATETIME_LIMIT_AS_VALUE=$(( ${DATETIME_LIMIT_AS_TIMESTAMP} * 1000 ))
