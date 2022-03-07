@@ -33,6 +33,7 @@ function generate_statistics ()
 
     local DATETIME_LIMIT_AS_VALUE=$(( ${DATETIME_LIMIT_AS_TIMESTAMP} * 1000 ))
 
+    echo ":: From the configuration, we are using >>${DAYS_TO_KEEP_IN_THE_PAST}<< days to keep as base."
     echo ":: Limitation datetime is >>${DATETIME_LIMIT_AS_STRING}<< which is >>${DATETIME_LIMIT_AS_VALUE}<< as value."
 
     _generate_statistic_per_table "Posts" ${DATETIME_LIMIT_AS_VALUE}

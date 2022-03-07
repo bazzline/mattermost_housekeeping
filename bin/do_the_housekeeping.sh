@@ -83,6 +83,7 @@ function do_the_housekeeping ()
 
     local DATETIME_LIMIT_AS_VALUE=$(( ${DATETIME_LIMIT_AS_TIMESTAMP} * 1000 ))
 
+    _log_message debug ":: From the configuration, we are using >>${DAYS_TO_KEEP_IN_THE_PAST}<< days to keep as base."
     _log_message info ":: Removing entries older than >>${DATETIME_LIMIT_AS_STRING}<< which is >>${DATETIME_LIMIT_AS_VALUE}<< as value."
 
     _process_table_posts ${DATETIME_LIMIT_AS_VALUE}
