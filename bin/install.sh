@@ -29,7 +29,7 @@ function _install_mattermost_housekeeping ()
     echo "   >>${PATH_TO_DATA}/local.config.sh<<"
     echo ""
 
-    if [[ -f /usr/bin/systemd ]];
+    if [[ $(ps -p 1 -o comm=) == "systemd" ]];
     then
         local TEMPLATE_PATH_TO_THE_SCRIPT="${PATH_TO_BIN}/do_the_housekeeping.sh"
 
